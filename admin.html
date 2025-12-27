@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>لوحة المطعم | لقمان أبو صليح</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+
+  <!-- Admin Gate -->
+  <div id="adminGate" class="gate">
+    <div class="gate-card">
+      <div class="gate-title">
+        <i class="fa-solid fa-lock"></i>
+        دخول لوحة المطعم
+      </div>
+      <div class="muted" style="margin-top:6px; line-height:1.8;">
+        هذه اللوحة مخصصة للإدارة فقط. الرجاء إدخال كلمة المرور.
+      </div>
+
+      <label class="label" style="margin-top:12px;">كلمة المرور</label>
+      <input id="adminPinInput" class="input" type="password" placeholder="أدخل كلمة المرور" />
+
+      <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+        <button id="btnAdminLogin" class="btn btn-primary" type="button">
+          <i class="fa-solid fa-right-to-bracket"></i>
+          دخول
+        </button>
+        <a class="btn btn-ghost" href="index.html">
+          <i class="fa-solid fa-arrow-right"></i>
+          رجوع
+        </a>
+      </div>
+
+      <div id="adminGateMsg" class="muted small" style="margin-top:10px;"></div>
+    </div>
+  </div>
+
+  <header class="topbar">
+    <div class="topbar__brand">
+      <div class="logo">ل</div>
+      <div>
+        <div class="brand__name">لوحة المطعم</div>
+        <div class="brand__sub">الأردن • عمّان</div>
+      </div>
+    </div>
+
+    <div class="topbar__actions">
+      <span id="openBadgeAdmin" class="badge">—</span>
+      <a class="icon-btn" href="index.html" title="واجهة الزبون" aria-label="واجهة الزبون">
+        <i class="fa-solid fa-house"></i>
+      </a>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="section card">
+      <div class="section__head">
+        <h2>إعدادات التشغيل</h2>
+        <div class="muted">فتح/إغلاق، أجرة توصيل، حد أدنى، أوقات العمل.</div>
+      </div>
+
+      <div class="two">
+        <div class="panel">
+          <div class="panel__title"><i class="fa-solid fa-toggle-on"></i> حالة المطعم</div>
+
+          <div class="radio-row">
+            <label class="radio">
+              <input type="radio" name="isOpen" value="true" />
+              مفتوح
+            </label>
+
+            <label class="radio">
+              <input type="radio" name="isOpen" value="false" />
+              مغلق
+            </label>
+          </div>
+
+          <div class="muted small" style="margin-top:10px;">
+            عند الإغلاق، سيتم منع تأكيد الطلبات من واجهة الزبون.
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel__title"><i class="fa-solid fa-sliders"></i> إعدادات الطلب</div>
+
+          <label class="label">أجرة التوصيل (د.أ)</label>
+          <input id="deliveryFeeInput" class="input" type="number" step="0.05" min="0" />
+
+          <label class="label">الحد الأدنى للطلب (د.أ)</label>
+          <input id="minOrderInput" class="input" type="number" step="0.05" min="0" />
+
+          <label class="label">أوقات العمل</label>
+          <input id="hoursInput" class="input" placeholder="12:00 - 12:00" />
+
+          <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+            <button id="btnSaveSettings" class="btn btn-primary" type="button">
+              <i class="fa-solid fa-floppy-disk"></i>
+              حفظ
+            </button>
+
+            <button id="btnResetDemo" class="btn btn-secondary" type="button">
+              <i class="fa-solid fa-rotate"></i>
+              Reset (للعرض)
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section card">
+      <div class="section__head">
+        <h2>الطلبات</h2>
+        <div class="filters">
+          <select id="orderFilter" class="select">
+            <option value="ALL">الكل</option>
+            <option value="RECEIVED">تم الاستلام</option>
+            <option value="PREPARING">قيد التحضير</option>
+            <option value="ON_THE_WAY">بالطريق</option>
+            <option value="DELIVERED">تم التسليم</option>
+            <option value="CANCELED">ملغي</option>
+          </select>
+
+          <div class="search">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input id="orderSearch" class="input" placeholder="بحث برقم الطلب أو الهاتف..." />
+          </div>
+        </div>
+      </div>
+
+      <div id="ordersList" class="orders"></div>
+    </section>
+
+    <section class="section card">
+      <div class="section__head">
+        <h2>إدارة المنيو</h2>
+        <div class="filters">
+          <button id="btnOpenAddItem" class="btn btn-primary" type="button">
+            <i class="fa-solid fa-plus"></i>
+            إضافة صنف
+          </button>
+
+          <div class="search">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input id="menuSearchAdmin" class="input" placeholder="بحث في الأصناف..." />
+          </div>
+        </div>
+      </div>
+
+      <div id="menuAdmin" class="grid"></div>
+    </section>
+
+    <footer class="footer">
+      <div class="muted small">هذا نموذج Static. للحماية الحقيقية يلزم Back-end وصلاحيات فعلية.</div>
+    </footer>
+  </main>
+
+  <!-- Toast -->
+  <div id="toast" class="toast hidden"></div>
+
+  <!-- Modal Add/Edit -->
+  <div id="itemModal" class="gate">
+    <div class="gate-card">
+      <div class="gate-title">
+        <i class="fa-solid fa-burger"></i>
+        <span id="itemModalTitle">إضافة صنف</span>
+      </div>
+
+      <label class="label">القسم</label>
+      <select id="itemCat" class="select"></select>
+
+      <label class="label">اسم الصنف</label>
+      <input id="itemName" class="input" />
+
+      <label class="label">الوصف</label>
+      <textarea id="itemDesc" class="textarea"></textarea>
+
+      <label class="label">السعر (د.أ)</label>
+      <input id="itemPrice" class="input" type="number" step="0.05" min="0" />
+
+      <label class="label">رابط الصورة (URL)</label>
+      <input id="itemImg" class="input" placeholder="https://..." />
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+        <label class="radio">
+          <input id="itemAvailable" type="checkbox" checked />
+          متاح
+        </label>
+
+        <button id="btnSaveItem" class="btn btn-primary" type="button">
+          <i class="fa-solid fa-floppy-disk"></i>
+          حفظ
+        </button>
+
+        <button id="btnCloseItemModal" class="btn btn-ghost" type="button">
+          <i class="fa-solid fa-xmark"></i>
+          إغلاق
+        </button>
+      </div>
+
+      <div id="itemModalMsg" class="muted small" style="margin-top:10px;"></div>
+    </div>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="storage.js"></script>
+  <script src="admin.js"></script>
+</body>
+          </html>
