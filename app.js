@@ -45,6 +45,33 @@
   let map, marker;
   let pickedLatLng = { lat: 31.9539, lng: 35.9106 }; // عمّان
 
+  // =========================
+  // ✅ صور آمنة (Fix Unsplash Redirect Failures)
+  // =========================
+  const FALLBACK_IMG =
+    "https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=1200&q=80";
+
+  function resolveImageUrl(url) {
+    if (!url || typeof url !== "string") return FALLBACK_IMG;
+    const u = url.trim();
+    if (!u.startsWith("http")) return FALLBACK_IMG;
+    return u;
+  }
+
+  function attachSafeImage(imgEl) {
+    if (!imgEl) return;
+
+    // أفضل ممارسات للهاتف/الأداء
+    imgEl.loading = "lazy";
+    imgEl.referrerPolicy = "no-referrer";
+
+    // لو حدث فشل تحميل لأي سبب (CSP/Redirect/Slow net)
+    imgEl.onerror = () => {
+      imgEl.onerror = null;
+      imgEl.src = FALLBACK_IMG;
+    };
+  }
+
   function toast(msg) {
     if (!els.toast) return;
     els.toast.textContent = msg;
@@ -69,7 +96,7 @@
 
   function renderChips() {
     const st = Storage.getState();
-    const cats = (st.categories || []).filter(c => c.isActive).sort((a,b) => (a.sort||0)-(b.sort||0));
+    const cats = (st.categories || []).filter(c => c.isActive).sort((a, b) => (a.sort || 0) - (b.sort || 0));
 
     els.catChips.innerHTML = "";
     const all = document.createElement("button");
@@ -117,10 +144,12 @@
       const card = document.createElement("div");
       card.className = "item";
 
+      const imgSrc = resolveImageUrl(it.imageUrl);
+
       card.innerHTML = `
-        <img src="${it.imageUrl}" alt="${it.name}">
+        <img class="item-img" src="${imgSrc}" alt="${it.name || ""}" loading="lazy" referrerpolicy="no-referrer">
         <div class="pad">
-          <div class="name">${it.name}</div>
+          <div class="name">${it.name || "—"}</div>
           <div class="desc">${it.desc || "—"}</div>
           <div class="row">
             <div class="price">${Storage.formatJOD(it.priceJOD)}</div>
@@ -131,6 +160,10 @@
           </div>
         </div>
       `;
+
+      // ✅ منع فشل الصور (خصوصًا source.unsplash.com)
+      const img = card.querySelector("img.item-img");
+      attachSafeImage(img);
 
       card.querySelector("button").onclick = () => {
         Storage.upsertCart(it.id, 1);
@@ -191,7 +224,6 @@
         </div>
       `;
 
-      const [btnMinus, , btnPlus] = row.querySelectorAll(".qty button, .qty strong, .qty button");
       row.querySelectorAll(".qty button")[0].onclick = () => { Storage.upsertCart(it.id, -1); syncAll(); };
       row.querySelectorAll(".qty button")[1].onclick = () => { Storage.upsertCart(it.id, +1); syncAll(); };
       row.querySelector(".btn-ghost").onclick = () => { Storage.upsertCart(it.id, -999); syncAll(); };
@@ -232,7 +264,7 @@
       <div><strong>${o.orderNumber}</strong> — الحالة: <strong>${label}</strong></div>
       <div class="muted small">الإجمالي: ${Storage.formatJOD(o.totalJOD)} • ${new Date(o.createdAt).toLocaleString("ar-JO")}</div>
       <div style="margin-top:8px;">
-        ${(o.items||[]).map(i=>`• ${i.nameSnapshot} × ${i.qty}`).join("<br/>")}
+        ${(o.items || []).map(i => `• ${i.nameSnapshot} × ${i.qty}`).join("<br/>")}
       </div>
     `;
   }
@@ -295,20 +327,20 @@
   function validateCheckout() {
     const st = Storage.getState();
 
-    if (!st.settings.isOpenNow) return { ok:false, msg:"المطعم مغلق الآن." };
-    if (Storage.cartCount() <= 0) return { ok:false, msg:"السلة فارغة." };
+    if (!st.settings.isOpenNow) return { ok: false, msg: "المطعم مغلق الآن." };
+    if (Storage.cartCount() <= 0) return { ok: false, msg: "السلة فارغة." };
 
     const phone = (els.custPhone.value || "").trim();
-    if (!phone) return { ok:false, msg:"أدخل رقم الهاتف." };
+    if (!phone) return { ok: false, msg: "أدخل رقم الهاتف." };
 
     const minOrder = Number(st.settings.minOrderJOD || 0);
-    if (Storage.cartSubtotal() < minOrder) return { ok:false, msg:`الحد الأدنى للطلب هو ${Storage.formatJOD(minOrder)}.` };
+    if (Storage.cartSubtotal() < minOrder) return { ok: false, msg: `الحد الأدنى للطلب هو ${Storage.formatJOD(minOrder)}.` };
 
     if (!Number.isFinite(pickedLatLng.lat) || !Number.isFinite(pickedLatLng.lng)) {
-      return { ok:false, msg:"حدد موقعك على الخريطة." };
+      return { ok: false, msg: "حدد موقعك على الخريطة." };
     }
 
-    return { ok:true };
+    return { ok: true };
   }
 
   function placeOrder() {
